@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: activly
+  labels:
+    app: activly
+spec:
+  selector:
+    matchLabels:
+      app: activly
+  template:
+    metadata:
+      labels:
+        app: activly
+    spec:
+      containers:
+      - name: activly
+        image: activly-image
+        ports:
+        - containerPort: 8080
