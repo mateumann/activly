@@ -1,5 +1,5 @@
 FROM golang:1.21
 WORKDIR /app
-ADD build build
+ADD build/activly ./activly
 #ADD web web
-ENTRYPOINT build/activly
+ENTRYPOINT activly
