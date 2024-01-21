@@ -2,7 +2,7 @@ package server
 
 import (
 	"fmt"
-	"github.com/go-chi/chi/v5"
+	chi "github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"net/http"
 )
@@ -23,9 +23,16 @@ func Serve() {
 }
 
 func root(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(fmt.Sprintf("Hello, Chi! request_id=%v", r.Context().Value(middleware.RequestIDKey))))
+	_, err := w.Write([]byte(fmt.Sprintf("hello, request_id=%v", r.Context().Value(middleware.RequestIDKey))))
+	if err != nil {
+		panic(err)
+	}
 }
 
 func auth0callback(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(fmt.Sprintf("Callback has been called with body=%v, form=%v, post_form=%v, cookies=%v", r.Body, r.Form, r.PostForm, r.Cookies())))
+	_, err := w.Write([]byte(fmt.Sprintf("callback has been called, request_id=%v",
+		r.Context().Value(middleware.RequestIDKey))))
+	if err != nil {
+		panic(err)
+	}
 }
