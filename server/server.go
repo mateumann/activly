@@ -25,6 +25,7 @@ func Serve() {
 
 	server := &http.Server{
 		Addr:              ":8080",
+		Handler:           r,
 		ReadHeaderTimeout: RequestTimeout * time.Second,
 	}
 
