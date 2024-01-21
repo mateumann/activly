@@ -3,14 +3,6 @@
 # For more on Extensions, see: https://docs.tilt.dev/extensions.html
 load('ext://restart_process', 'docker_build_with_restart')
 
-# Records the current time, then kicks off a server update.
-# Normally, you would let Tilt do deploys automatically, but this
-# shows you how to set up a custom workflow that measures it.
-#local_resource(
-#    'deploy',
-#    'python3 record-start-time.py',
-#)
-
 compile_cmd = 'CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/activly ./cmd/main.go'
 
 # Local deployment
@@ -18,13 +10,12 @@ local_resource(
   'activly-compile',
   compile_cmd,
   deps=['./cmd/main.go',],
-  #resource_deps=['deploy'],
 )
 
 docker_build_with_restart(
-  'activly-image',
+  'activly-service',
   '.',
-  entrypoint=['/app/build/activly'],
+  entrypoint=['/app/activly'],
   dockerfile='deployment/Dockerfile',
   only=[
     './build',
@@ -32,7 +23,7 @@ docker_build_with_restart(
   ],
   #disable_push=True,
   live_update=[
-    sync('./build', '/app/build'),
+    sync('./build/activly', '/app/activly'),
     #sync('./web', '/app/web'),
   ],
 )
