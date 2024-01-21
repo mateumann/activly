@@ -21,17 +21,14 @@ docker_build_with_restart(
     './build',
     #'./web',
   ],
-  #disable_push=True,
   live_update=[
     sync('./build/activly', '/app/activly'),
     #sync('./web', '/app/web'),
   ],
 )
 
-#allow_k8s_contexts('kind-kind')
-
 if k8s_context() != 'kind-kind':
-    fail('Requires Kind to be the active k8s context')
+    fail('Cannot access kind-kind Kubernetes context.  Is the Kind cluster accessible?')
 
 k8s_yaml('deployment/kubernetes.yaml')
 
