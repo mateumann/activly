@@ -1,20 +1,20 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: ReplicaSet
 metadata:
   name: activly
   labels:
-    app: activly
+    app: activly-service
 spec:
   selector:
     matchLabels:
-      app: activly
+      app: activly-service
   template:
     metadata:
       labels:
-        app: activly
+        app: activly-service
     spec:
       containers:
       - name: activly
-        image: activly-image
+        image: activly-service
         ports:
         - containerPort: 8080
