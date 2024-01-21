@@ -2,10 +2,14 @@ package server
 
 import (
 	"fmt"
+	"net/http"
+	"time"
+
 	chi "github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"net/http"
 )
+
+const RequestTimeout = 3
 
 func Serve() {
 	r := chi.NewRouter()
@@ -19,19 +23,26 @@ func Serve() {
 	r.Get("/", root)
 	r.Get("/callback", auth0callback)
 
-	_ = http.ListenAndServe(":8080", r)
+	server := &http.Server{
+		Addr:              ":8080",
+		ReadHeaderTimeout: RequestTimeout * time.Second,
+	}
+
+	if err := server.ListenAndServe(); err != nil {
+		panic(err)
+	}
 }
 
 func root(w http.ResponseWriter, r *http.Request) {
-	_, err := w.Write([]byte(fmt.Sprintf("hello, request_id=%v", r.Context().Value(middleware.RequestIDKey))))
+	_, err := fmt.Fprintf(w, "hello, request_id=%s", r.Context().Value(middleware.RequestIDKey))
 	if err != nil {
 		panic(err)
 	}
 }
 
 func auth0callback(w http.ResponseWriter, r *http.Request) {
-	_, err := w.Write([]byte(fmt.Sprintf("callback has been called, request_id=%v",
-		r.Context().Value(middleware.RequestIDKey))))
+	requestID := r.Context().Value(middleware.RequestIDKey)
+	_, err := fmt.Fprintf(w, "callback has been called, request_id=%v", requestID)
 	if err != nil {
 		panic(err)
 	}
