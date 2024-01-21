@@ -35,7 +35,8 @@ func Serve() {
 }
 
 func root(w http.ResponseWriter, r *http.Request) {
-	_, err := fmt.Fprintf(w, "hello, request_id=%s", r.Context().Value(middleware.RequestIDKey))
+	requestID := r.Context().Value(middleware.RequestIDKey)
+	_, err := fmt.Fprintf(w, "hello, request_id=%s", requestID)
 	if err != nil {
 		panic(err)
 	}
