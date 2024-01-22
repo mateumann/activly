@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: activly-backend
+  labels:
+    app: activly
+    tier: backend
+spec:
+  selector:
+    matchLabels:
+      app: activly
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: activly
+        tier: backend
+    spec:
+      containers:
+      - name: activly-backend
+        image: activly-backend
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 12345
+#          readOnlyRootFilesystem: true ← probably not good for Tilt
+#          capabilities:
+#            drop:
+#              - "ALL"
+#            add:
+#              - "CAP_CHOWN"
+        env:
+          - name: "POSTGRES_USER"
+            valueFrom:
+              secretKeyRef:
+                name: "db"
+                key: "username"
+          - name: "POSTGRES_PASSWORD"
+            valueFrom:
+              secretKeyRef:
+                name: "db"
+                key: "password"
+          - name: "POSTGRES_DB"
+            valueFrom:
+              secretKeyRef:
+                name: "db"
+                key: "name"
+          - name: "POSTGRES_HOST"
+            value: "postgres"
+          - name: "POSTGRES_PORT"
+            value: "5432"
+        ports:
+        - containerPort: 8080

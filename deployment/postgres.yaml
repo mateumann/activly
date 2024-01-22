@@ -1,0 +1,79 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: "db"
+type: Opaque
+data:
+  name: "YWN0aXZseQ=="
+  username: "YWN0aXZseQ=="
+  password: "YWN0aXYxeQ=="  # pragma: allowlist secret
+
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: "postgres"
+  labels:
+    app: "postgres"
+    tier: "db"
+spec:
+  selector:
+    matchLabels:
+      app: "postgres"
+      tier: "db"
+  template:
+    metadata:
+      labels:
+        app: "postgres"
+        tier: "db"
+    spec:
+      containers:
+      - name: "postgres"
+        image: "postgres:16.1-alpine3.19"
+#        securityContext:
+#          allowPrivilegeEscalation: false
+#          runAsNonRoot: true
+#          runAsUser: 999
+          # readOnlyRootFilesystem: true  ← probably not good for Tilt
+          # capabilities:
+          #  drop:
+          #    - "ALL"
+          #  add:
+          #    - "CAP_CHOWN"
+          #    - "CAP_FOWNER"
+          #    - "CAP_FSETID"
+        env:
+          - name: "POSTGRES_USER"
+            valueFrom:
+              secretKeyRef:
+                name: "db"
+                key: "username"
+          - name: "POSTGRES_PASSWORD"
+            valueFrom:
+              secretKeyRef:
+                name: "db"
+                key: "password"
+          - name: "POSTGRES_DB"
+            valueFrom:
+              secretKeyRef:
+                name: "db"
+                key: "name"
+        ports:
+        - containerPort: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "postgres"
+  labels:
+    app: "postgres"
+    tier: "db"
+spec:
+  selector:
+    app: "postgres"
+    tier: "db"
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
