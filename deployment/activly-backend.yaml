@@ -24,9 +24,9 @@ spec:
           runAsNonRoot: true
           runAsUser: 12345
 #          readOnlyRootFilesystem: true ← probably not good for Tilt
-#          capabilities:
-#            drop:
-#              - "ALL"
+          capabilities:
+            drop:
+              - "ALL"
 #            add:
 #              - "CAP_CHOWN"
         env:
