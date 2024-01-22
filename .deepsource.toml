@@ -1,8 +1,29 @@
 version = 1
 
+test_patterns = [
+  "tests/*_test.go",
+  "**/*_test.go"
+]
+
 [[analyzers]]
 name = "go"
+enabled = true
 
   [analyzers.meta]
   import_root = "github.com/mateumann/activly"
+  cgo_enabled = false
+
+[[analyzers]]
+name = "docker"
+enabled = true
+
+  [analyzers.meta]
+  dockerfile_paths = [
+    "deployment/Dockerfile",
+  ]
+
+  trusted_registries = [
+    "docker.io",
+    "quay.io"
+  ]
 
