@@ -19,6 +19,16 @@ spec:
       containers:
       - name: activly-backend
         image: activly-backend
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 12345
+#          readOnlyRootFilesystem: true ← probably not good for Tilt
+#          capabilities:
+#            drop:
+#              - "ALL"
+#            add:
+#              - "CAP_CHOWN"
         env:
           - name: "POSTGRES_USER"
             valueFrom:

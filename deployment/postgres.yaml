@@ -31,6 +31,18 @@ spec:
       containers:
       - name: "postgres"
         image: "postgres:16.1-alpine3.19"
+#        securityContext:
+#          allowPrivilegeEscalation: false
+#          runAsNonRoot: true
+#          runAsUser: 999
+          # readOnlyRootFilesystem: true  ← probably not good for Tilt
+          # capabilities:
+          #  drop:
+          #    - "ALL"
+          #  add:
+          #    - "CAP_CHOWN"
+          #    - "CAP_FOWNER"
+          #    - "CAP_FSETID"
         env:
           - name: "POSTGRES_USER"
             valueFrom:
@@ -49,7 +61,6 @@ spec:
                 key: "name"
         ports:
         - containerPort: 5432
-
 ---
 apiVersion: v1
 kind: Service
