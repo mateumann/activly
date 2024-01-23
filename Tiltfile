@@ -16,7 +16,7 @@ docker_build_with_restart(
   'activly-backend',
   '.',
   entrypoint=['/app/activly'],
-  dockerfile='deployment/Dockerfile',
+  dockerfile='deployments/Dockerfile',
   only=[
     './build',
     #'./web',
@@ -30,7 +30,7 @@ docker_build_with_restart(
 if k8s_context() != 'kind-kind':
     fail('Cannot access kind-kind Kubernetes context.  Is the Kind cluster accessible?')
 
-k8s_yaml(['deployment/activly-backend.yaml', 'deployment/postgres.yaml', ])
+k8s_yaml(['deployments/tilt/activly-backend.yaml', 'deployments/tilt/postgres.yaml', ])
 
 k8s_resource(
   'activly-backend',
