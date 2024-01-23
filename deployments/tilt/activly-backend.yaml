@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: ReplicaSet
+kind: Deployment
 metadata:
   name: activly-backend
   labels:
@@ -22,32 +22,37 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           runAsNonRoot: true
-          runAsUser: 12345
-#          readOnlyRootFilesystem: true ← probably not good for Tilt
+          runAsUser: 5149 # FIXME: this is for Tilt, change to > 10000, same as in Dockerfile
+#          readOnlyRootFilesystem: true # ← probably not good for Tilt
           capabilities:
             drop:
               - "ALL"
-#            add:
-#              - "CAP_CHOWN"
+        resources:
+          limits:
+            cpu: "1"
+            memory: "200Mi"
+          requests:
+            cpu: "0.2"
+            memory: "100Mi"
         env:
+          - name: "POSTGRES_HOST"
+            value: "postgres"
+          - name: "POSTGRES_PORT"
+            value: "5432"
+          - name: "POSTGRES_DB"
+            valueFrom:
+              configMapKeyRef:
+                name: "db"
+                key: "name"
           - name: "POSTGRES_USER"
             valueFrom:
-              secretKeyRef:
+              configMapKeyRef:
                 name: "db"
-                key: "username"
+                key: "user"
           - name: "POSTGRES_PASSWORD"
             valueFrom:
               secretKeyRef:
                 name: "db"
                 key: "password"
-          - name: "POSTGRES_DB"
-            valueFrom:
-              secretKeyRef:
-                name: "db"
-                key: "name"
-          - name: "POSTGRES_HOST"
-            value: "postgres"
-          - name: "POSTGRES_PORT"
-            value: "5432"
         ports:
         - containerPort: 8080
