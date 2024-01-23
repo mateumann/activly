@@ -7,8 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/chi/v5"
+	chi "github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/google/uuid"
 )
 
 const RequestTimeout = 3
@@ -18,7 +19,7 @@ type Server struct {
 }
 
 type user struct {
-	id       string
+	id       uuid.UUID
 	name     string
 	settings []byte
 	lastSeen *time.Time
@@ -60,7 +61,7 @@ func (s Server) auth0callback(w http.ResponseWriter, r *http.Request) {
 func (s Server) listUsers(w http.ResponseWriter, r *http.Request) {
 	requestID := r.Context().Value(middleware.RequestIDKey)
 
-	_, err := fmt.Fprintf(w, "list users has been called, request_id=%s\n", requestID)
+	_, err := fmt.Fprintf(w, "listing users, request_id=%s\n", requestID)
 	if err != nil {
 		panic(err)
 	}
