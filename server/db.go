@@ -19,7 +19,12 @@ func dbConnect() (*sql.DB, error) {
 		os.Getenv("POSTGRES_DB"),
 	)
 
-	return sql.Open("postgres", psqlInfo)
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open postgres connection to database: %w", err)
+	}
+
+	return db, nil
 }
 
 func dbClose(db *sql.DB) {
@@ -35,12 +40,12 @@ func dbInfo(db *sql.DB) string {
 func dbInit(db *sql.DB) error {
 	tx, err := db.Begin()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to begin a db transaction: %w", err)
 	}
 
-	stmt, err := tx.Prepare(
-		"CREATE TABLE IF NOT EXISTS public.users (" +
-			"id uuid NOT NULL UNIQUE, " +
+	_, err = tx.Exec(
+		"CREATE TABLE IF NOT EXISTS public.users " + "(" +
+			"id uuid PRIMARY KEY DEFAULT gen_random_uuid(), " +
 			fmt.Sprintf("name varchar(%d) NOT NULL UNIQUE, ", dbInitNameLenght) +
 			"settings jsonb, " +
 			"last_seen timestamp without time zone DEFAULT now()" +
@@ -49,19 +54,22 @@ func dbInit(db *sql.DB) error {
 	if err != nil {
 		_ = tx.Rollback()
 
-		return err
-	}
-	defer stmt.Close()
-
-	if _, err := stmt.Exec(); err != nil {
-		_ = tx.Rollback()
-
-		return err
+		return fmt.Errorf("failed to create users table: %w", err)
 	}
 
-	return tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("failed to commit a db transaction: %w", err)
+	}
+
+	return nil
 }
 
 func dbGetUsers(db *sql.DB) (*sql.Rows, error) {
-	return db.Query("SELECT id, name, settings, last_seen FROM public.users ORDER BY name;")
+	rows, err := db.Query("SELECT id, name, settings, last_seen FROM public.users ORDER BY last_seen;")
+	if err != nil {
+		return nil, fmt.Errorf("failed querying users: %w", err)
+	}
+
+	return rows, nil
 }
