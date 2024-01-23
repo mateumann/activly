@@ -1,4 +1,4 @@
-module activly
+module github.com/mateumann/activly
 
 go 1.21
 
