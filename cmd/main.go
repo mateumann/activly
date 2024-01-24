@@ -1,46 +1,50 @@
 package main
 
 import (
-	"net/http"
 	"time"
 
-	chi "github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/healthcheck"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	_ "github.com/lib/pq"
 	"github.com/mateumann/activly/adapter/handler"
 	"github.com/mateumann/activly/adapter/repository"
 	"github.com/mateumann/activly/core/services"
 )
 
-const RequestTimeoutSeconds = 3
-
 func main() {
 	store := repository.NewUserPostgresRepository()
 	service := services.NewUserService(store)
 
-	r := initRoutes(service)
+	app := initApp(service)
 
-	server := &http.Server{
-		Addr:              ":8080",
-		Handler:           r,
-		ReadHeaderTimeout: RequestTimeoutSeconds * time.Second,
-	}
-
-	if err := server.ListenAndServe(); err != nil {
-		panic(err)
-	}
+	panic(app.Listen(":8080"))
 }
 
-func initRoutes(svc *services.UserService) *chi.Mux {
-	r := chi.NewRouter()
-	h := handler.NewHTTPHandler(svc)
+func initApp(userService *services.UserService) *fiber.App {
+	app := fiber.New()
+	h := handler.NewFiberHandler(userService)
 
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
+	app.Use(logger.New(logger.Config{
+		Format:     "${time} | ${status} | ${latency} | ${ip} | ${method} | ${path} | ${error}\n",
+		TimeFormat: time.RFC3339Nano,
+	}))
 
-	r.Get("/users", h.ListUsers)
+	app.Use(recover.New())
 
-	return r
+	app.Use(healthcheck.New(healthcheck.Config{
+		LivenessProbe: func(c *fiber.Ctx) bool {
+			return true
+		},
+		LivenessEndpoint: "/live",
+		ReadinessProbe: func(c *fiber.Ctx) bool {
+			return userService.Ready() // && ...
+		},
+		ReadinessEndpoint: "/ready",
+	}))
+
+	app.Get("/users", h.ListUsers)
+
+	return app
 }
