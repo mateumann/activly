@@ -82,7 +82,7 @@ func (r *UserPostgresRepository) Close() {
 
 var errPostgresRepositorySaveNotImplemented = errors.New("UserPostgresRepository.Save not yet implemented")
 
-func (r *UserPostgresRepository) Save(_ domain.User) error {
+func (*UserPostgresRepository) Save(_ domain.User) error {
 	return errPostgresRepositorySaveNotImplemented
 }
 

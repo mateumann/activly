@@ -19,7 +19,7 @@ func NewUserService(repo ports.UserRepository) *UserService {
 	}
 }
 
-func (s *UserService) Ready() bool {
+func (*UserService) Ready() bool {
 	return true // come up with something more useful, e.g. is database ready or something like that
 }
 
