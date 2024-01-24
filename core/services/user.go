@@ -19,10 +19,14 @@ func NewUserService(repo ports.UserRepository) *UserService {
 	}
 }
 
+func (s *UserService) Ready() bool {
+	return true // come up with something more useful, e.g. is database ready or something like that
+}
+
 // ListUsers retrieves a list of users from the UserRepository.
 // It returns a slice of domain.User objects and any error encountered during the process.
-func (m *UserService) ListUsers() ([]*domain.User, error) {
-	users, err := m.repo.ListUsers()
+func (s *UserService) ListUsers() ([]*domain.User, error) {
+	users, err := s.repo.ListUsers()
 	if err != nil {
 		return nil, fmt.Errorf("failed listing users from the repository: %w", err)
 	}

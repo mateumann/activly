@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 
@@ -33,32 +34,15 @@ func NewUserPostgresRepository() *UserPostgresRepository {
 		panic(err)
 	}
 
-	return &UserPostgresRepository{db: db}
+	repo := &UserPostgresRepository{db: db}
+	if err := repo.init(); err != nil {
+		panic(err)
+	}
+
+	return repo
 }
 
-// Init initialises the UserPostgresRepository by creating the necessary database table.
-// It starts a transaction using the database connection. If the transaction fails to
-// begin, it returns an error indicating the failure. Otherwise, it executes a SQL
-// statement to create the "users" table with the required columns. If the execution
-// of SQL fails, it rolls back the transaction and returns an error. After successfully
-// creating the table, it commits the transaction. If the commit fails, it returns an
-// error. Otherwise, it returns nil to indicate successful initialization.
-// Note: The length of the "name" column in the table is set based on the `dbInitNameLength`
-// constant value, which is defined as 120.
-//
-// Example usage:
-//
-//	err := repo.Init()
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//
-// Declaration:
-//
-//	func (r *UserPostgresRepository) Init() error {
-//	    ...
-//	}
-func (r *UserPostgresRepository) Init() error {
+func (r *UserPostgresRepository) init() error {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return fmt.Errorf("failed to begin a db transaction: %w", err)
@@ -94,6 +78,12 @@ func (r *UserPostgresRepository) Close() {
 	if err := r.db.Close(); err != nil {
 		panic(err)
 	}
+}
+
+var errPostgresRepositorySaveNotImplemented = errors.New("UserPostgresRepository.Save not yet implemented")
+
+func (r *UserPostgresRepository) Save(_ domain.User) error {
+	return errPostgresRepositorySaveNotImplemented
 }
 
 // ListUsers retrieves a list of users from the database.

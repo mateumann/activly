@@ -4,6 +4,8 @@ import (
 	"github.com/mateumann/activly/core/domain"
 )
 
+// User Ports are interfaces that define how the communication between an actor, and the core has to be done.
+
 // UserService represents a service for managing user data.
 // It provides methods for creating, retrieving, and listing users.
 //
@@ -16,6 +18,7 @@ type UserService interface {
 		GetUserByName(name string) (*domain.User, error)
 		GetUserByUUID(uuid uuid.UUID) (*domain.User, error)
 	*/
+	Ready() bool
 	ListUsers() ([]*domain.User, error)
 }
 
@@ -26,10 +29,6 @@ type UserService interface {
 //
 // For more information on the fields and methods of domain.User, refer to its documentation.
 type UserRepository interface {
-	/*
-		CreateUser(user domain.User) error
-		GetUserByName(name string) (*domain.User, error)
-		GetUserByUUID(uuid uuid.UUID) (*domain.User, error)
-	*/
+	Save(user domain.User) error
 	ListUsers() ([]*domain.User, error)
 }
