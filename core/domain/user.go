@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -12,7 +11,7 @@ import (
 type User struct {
 	ID       uuid.UUID
 	Name     string
-	Settings []byte
+	Settings map[string]any // Make sure, that the JSONB submitted to the database is actually a map (not an array)
 	LastSeen *time.Time
 }
 
@@ -45,9 +44,7 @@ func (u User) String() string {
 	}
 
 	if u.Settings != nil {
-		var settings map[string]any
-		_ = json.Unmarshal(u.Settings, &settings)
-		result += fmt.Sprintf(", settings %v", settings)
+		result += fmt.Sprintf(", settings %v", u.Settings)
 	}
 
 	return result
