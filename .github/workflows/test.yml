@@ -29,6 +29,8 @@ jobs:
     steps:
       - name: Check out the code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Set up Go 1.x
         uses: actions/setup-go@v4
@@ -37,4 +39,21 @@ jobs:
         id: go
 
       - name: Test
-        run: go test -v ./...
+        run: go test -coverprofile=coverage.out -v ./...
+
+      - name: Report test coverage to DeepSource
+        uses: deepsourcelabs/test-coverage-action@master
+        with:
+          key: go
+          coverage-file: coverage.out
+          dsn: ${{ secrets.DEEPSOURCE_DSN }}
+
+      - name: Report test coverage to Codacy
+        uses: codacy/codacy-coverage-reporter-action@v1
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          # or
+          # api-token: ${{ secrets.CODACY_API_TOKEN }}
+          coverage-reports: coverage.out
+          # or a comma-separated list for multiple reports
+          # coverage-reports: <PATH_TO_REPORT>, <PATH_TO_REPORT>
