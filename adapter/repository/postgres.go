@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -116,16 +117,31 @@ func (r *UserPostgresRepository) ListUsers() ([]*domain.User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to query users: %w", err)
 	}
-	defer rows.Close()
+
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(rows)
 
 	users := make([]*domain.User, 0)
 
 	for rows.Next() {
 		var u domain.User
 
-		err := rows.Scan(&u.ID, &u.Name, &u.Settings, &u.LastSeen)
+		var settings []byte
+
+		err := rows.Scan(&u.ID, &u.Name, &settings, &u.LastSeen)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan user row: %w", err)
+		}
+
+		if len(settings) > 0 {
+			err = json.Unmarshal(settings, &u.Settings)
+			if err != nil {
+				return nil, fmt.Errorf("failed to unmarshal user settings: %w", err)
+			}
 		}
 
 		users = append(users, &u)
