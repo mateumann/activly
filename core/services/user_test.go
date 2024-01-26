@@ -102,3 +102,14 @@ func TestUserService_ListUsers(t *testing.T) {
 		}
 	})
 }
+
+func TestUserService_Ready(t *testing.T) {
+	t.Run("AlwaysTrue", func(t *testing.T) {
+		userService := NewUserService(nil)
+
+		ready := userService.Ready()
+		if ready != true {
+			t.Errorf("UserService.Ready() = %v, want true", ready)
+		}
+	})
+}
