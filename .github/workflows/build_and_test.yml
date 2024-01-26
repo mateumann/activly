@@ -1,36 +1,42 @@
-name: Build & Test
+name: "Build & Test"
 
 on:
   push:
-    branches: [ master ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ master ]
+    branches: [ "master" ]
+  schedule:
+    - cron: "0 10 * * *"
 
 jobs:
   build_n_test:
-    name: Build & Test
-    runs-on: ubuntu-latest
+    name: "Build & Test"
+    strategy:
+      matrix:
+        go-version: [ "1.21" ]
+        os: [ "ubuntu-latest" ]
+    runs-on: ${{ matrix.os }}
     steps:
-      - name: Check out the code
+      - name: "Check out the code"
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - name: Set up Go 1.x
+      - name: "Set up Go ${{ matrix.go-version }}"
         uses: actions/setup-go@v4
-        with:
-          go-version: "1.21"
         id: go
-      - name: Build
-        run: go build -v ./...
-      - name: Test
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: "Build"
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o build/activly ./cmd/main.go
+      - name: "Test with coverage"
         run: go test -coverprofile=coverage.out -v ./...
-      - name: Report test coverage to DeepSource
+      - name: "Report test coverage to DeepSource"
         uses: deepsourcelabs/test-coverage-action@master
         with:
           coverage-file: coverage.out
           key: "go"
           dsn: ${{ secrets.DEEPSOURCE_DSN }}
-      - name: Report test coverage to Codacy
+      - name: "Report test coverage to Codacy"
         uses: codacy/codacy-coverage-reporter-action@v1
         with:
           coverage-reports: coverage.out
