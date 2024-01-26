@@ -1,4 +1,4 @@
-name: Test
+name: Build & Test
 
 on:
   push:
@@ -7,50 +7,32 @@ on:
     branches: [ master ]
 
 jobs:
-  test:
-    name: Test
+  build_n_test:
+    name: Build & Test
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_DB: postgres
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres  # pragma: allowlist secret
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
     steps:
       - name: Check out the code
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-
       - name: Set up Go 1.x
         uses: actions/setup-go@v4
         with:
           go-version: "1.21"
         id: go
-
+      - name: Build
+        run: go build -v ./...
       - name: Test
         run: go test -coverprofile=coverage.out -v ./...
-
       - name: Report test coverage to DeepSource
         uses: deepsourcelabs/test-coverage-action@master
         with:
-          key: go
           coverage-file: coverage.out
+          key: "go"
           dsn: ${{ secrets.DEEPSOURCE_DSN }}
-
       - name: Report test coverage to Codacy
         uses: codacy/codacy-coverage-reporter-action@v1
         with:
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: coverage.out
           force-coverage-parser: "go"
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
