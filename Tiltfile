@@ -16,7 +16,7 @@ docker_build_with_restart(
   'activly-backend',
   '.',
   entrypoint=['/app/activly'],
-  dockerfile='deployments/Dockerfile',
+  dockerfile='deployments/tilt/Dockerfile',
   only=[
     './build',
     #'./web',
