@@ -44,6 +44,7 @@ func initApp(userService *services.UserService) *fiber.App {
 		ReadinessEndpoint: "/ready",
 	}))
 
+	app.Put("/users", h.CreateUser)
 	app.Get("/users", h.ListUsers)
 
 	return app
