@@ -1,0 +1,134 @@
+# -- Name of the application used instead of .Chart.Name
+nameOverride: ""
+# -- Full name of the application used instead of the one automatically generated based on .Chart.Name and .Release.Name
+fullnameOverride: ""
+
+
+# -- Global parameters group, available to all the templates
+# @default -- object
+global:
+  # -- Parameter group for container images
+  # @default -- object
+  image:
+    # -- Container images registry host and port
+    #registry: localhost:5000
+    registry: docker.io
+    # -- Specify a imagePullPolicy (can be overridden for each microservice), defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'. ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+    pullPolicy: IfNotPresent
+  # -- Parameter group related to authentication/authorization
+  # @default -- object
+  auth:
+    # -- Default length of pseudo-randomly generated password
+    passwordLength: 24
+
+
+# -- Parameters group for backend service
+# @default -- object
+backend:
+  # -- Should the service be enabled
+  enabled: true
+  # -- Replicas count
+  replicas: 1
+  # -- Parameters group for container image
+  image:
+    # -- Container image repository name
+    repository: activly-backend
+    # -- Container image tag
+    tag: "0.1.0"
+  # -- Port to expose
+  port: 8080
+  # -- Parameters group defining security context, the values are just copied over to deployment.yaml
+  # -- @default -- object
+  securityContext:
+    allowPrivilegeEscalation: false
+    runAsNonRoot: true
+    runAsUser: 20080
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - "ALL"
+  # -- Parameters group defining resource requests and limits, the values are just copied over to deployment.yaml
+  # @default -- object
+  resources:
+    # -- Parameters group defining requests resources
+    # @default -- object
+    requests:
+      # -- The requested CPU for the service
+      cpu: "0.1"
+      # -- The requested memory for the service
+      memory: "100Mi"
+    # -- Parameters group defining resources limits
+    # @default -- object
+    limits:
+      # -- The CPU limit for the service
+      cpu: "1"
+      # -- The memory limit for the service
+      memory: "200Mi"
+  # -- Parameters group defining pod probes
+  # -- @default -- object
+  probes:
+    # -- Enable
+    # -- Parameters group defining pod liveness probes
+    # @default -- object
+    liveness:
+      # -- Enable liveness probe
+      enabled: true
+      # -- Liveness probe initial delay in seconds
+      initialDelaySeconds: 20
+      # -- Liveness probe period in seconds
+      periodSeconds: 20
+      # -- Liveness probe timeout in seconds
+      timeoutSeconds: 10
+      # -- Liveness probe success threshold
+      successThreshold: 1
+      # -- Liveness probe failure threshold
+      failureThreshold: 3
+    # -- Parameters group for pod readiness probe
+    # @default -- object
+    readiness:
+      # -- Enable readiness probe
+      enabled: true
+      # -- Readiness probe initial delay in seconds
+      initialDelaySeconds: 10
+      # -- Readiness probe period in seconds
+      periodSeconds: 10
+      # -- Readiness probe timeout in seconds
+      timeoutSeconds: 10
+      # -- Readiness probe success threshold
+      successThreshold: 1
+      # -- Readiness probe failure threshold
+      failureThreshold: 3
+  # -- Additional labels added to backend pods
+  # @default -- object
+  podLabels: {}
+  podAnnotations: {}
+
+
+# -- Parameters group for bitnami/postgresql helm chart.
+# Details: https://github.com/bitnami/charts/blob/main/bitnami/postgresql/README.md
+# @default -- object
+postgresql:
+  enabled: true
+  fullnameOverride: "postgres"
+  auth:
+    username: "activly"
+    database: "activly"
+    existingSecret: "db-credentials"  # pragma: allowlist secret
+    secretKeys:
+      adminPasswordKey: "admin-password"  # pragma: allowlist secret
+      userPasswordKey: "user-password"  # pragma: allowlist secret
+  containerPorts:
+    postgresql: 5432
+  metrics:
+    enabled: false
+  primary:
+    service:
+      ports:
+        postgresql: 5432
+    resources:
+      limits:
+        cpu: "2"
+        memory: "1Gi"
+      requests:
+        cpu: "0.5"
+        memory: "256Mi"
