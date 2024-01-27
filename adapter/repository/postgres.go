@@ -16,33 +16,6 @@ type UserPostgresRepository struct {
 	db *sql.DB
 }
 
-// NewUserPostgresRepository returns a new instance of UserPostgresRepository.
-// It creates a connection string using environment variables for PostgreSQL connection details.
-// Then, it opens a connection to the PostgreSQL database.
-// If the connection fails, it panics with the error.
-// Finally, it initialises and returns a UserPostgresRepository with the opened database connection.
-func NewUserPostgresRepository() *UserPostgresRepository {
-	conn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		os.Getenv("POSTGRES_HOST"),
-		os.Getenv("POSTGRES_PORT"),
-		os.Getenv("POSTGRES_USER"),
-		os.Getenv("POSTGRES_PASSWORD"),
-		os.Getenv("POSTGRES_DB"),
-	)
-
-	db, err := sql.Open("postgres", conn)
-	if err != nil {
-		panic(err)
-	}
-
-	repo := &UserPostgresRepository{db: db}
-	if err := repo.init(); err != nil {
-		panic(err)
-	}
-
-	return repo
-}
-
 func (r *UserPostgresRepository) init() error {
 	tx, err := r.db.Begin()
 	if err != nil {
@@ -82,6 +55,27 @@ func (r *UserPostgresRepository) Close() {
 }
 
 var errPostgresRepositorySaveNotImplemented = errors.New("UserPostgresRepository.Save not yet implemented")
+
+func (r *UserPostgresRepository) Create(name string, settings map[string]interface{}) error {
+	stmt, err := r.db.Prepare("INSERT INTO public.users(name, settings) VALUES (?, ?)")
+	if err != nil {
+		return fmt.Errorf("failed to prepare an insert user statement: %w", err)
+	}
+
+	defer func(stmt *sql.Stmt) {
+		err := stmt.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(stmt)
+
+	_, err = stmt.Exec(name, settings)
+	if err != nil {
+		return fmt.Errorf("failed to insert a user: %w", err)
+	}
+
+	return nil
+}
 
 func (*UserPostgresRepository) Save(_ domain.User) error {
 	return errPostgresRepositorySaveNotImplemented
@@ -152,4 +146,31 @@ func (r *UserPostgresRepository) ListUsers() ([]*domain.User, error) {
 	}
 
 	return users, nil
+}
+
+// NewUserPostgresRepository returns a new instance of UserPostgresRepository.
+// It creates a connection string using environment variables for PostgreSQL connection details: POSTGRES_HOST,
+// POSTGRES_PORT, POSTGRES_DB, POSTGRES_USER and POSTGRES_PASSWORD.  Then, it opens a connection to the PostgreSQL
+// database.  If the connection fails, it panics with the error.  Finally, it initialises and returns
+// a UserPostgresRepository with the opened database connection.
+func NewUserPostgresRepository() *UserPostgresRepository {
+	conn := fmt.Sprintf("host=%s port=%s dbname=%s user=%s password=%s sslmode=disable",
+		os.Getenv("POSTGRES_HOST"),
+		os.Getenv("POSTGRES_PORT"),
+		os.Getenv("POSTGRES_DB"),
+		os.Getenv("POSTGRES_USER"),
+		os.Getenv("POSTGRES_PASSWORD"),
+	)
+
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		panic(err)
+	}
+
+	repo := &UserPostgresRepository{db: db}
+	if err := repo.init(); err != nil {
+		panic(err)
+	}
+
+	return repo
 }

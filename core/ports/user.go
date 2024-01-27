@@ -29,6 +29,7 @@ type UserService interface {
 //
 // For more information on the fields and methods of domain.User, refer to its documentation.
 type UserRepository interface {
+	Create(name string, settings map[string]interface{}) error
 	Save(user domain.User) error
 	ListUsers() ([]*domain.User, error)
 }

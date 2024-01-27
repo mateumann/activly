@@ -15,6 +15,10 @@ type mockUserRepository struct {
 	err   error
 }
 
+func (m *mockUserRepository) Create(_ string, _ map[string]interface{}) error {
+	return m.err
+}
+
 func (m *mockUserRepository) Save(_ domain.User) error {
 	return m.err
 }
