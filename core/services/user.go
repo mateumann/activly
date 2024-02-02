@@ -12,15 +12,15 @@ type UserService struct {
 	repo ports.UserRepository
 }
 
-// NewUserService creates a new instance of UserService with the provided UserRepository.
-func NewUserService(repo ports.UserRepository) *UserService {
-	return &UserService{
-		repo: repo,
+// CreateUser creates a user with the given name and settings in the UserRepository.
+// It returns an error if creating the user in the repository fails.
+func (s *UserService) CreateUser(name string, settings map[string]interface{}) error {
+	err := s.repo.Create(name, settings)
+	if err != nil {
+		return fmt.Errorf("failed creating a user in the repository: %w", err)
 	}
-}
 
-func (*UserService) Ready() bool {
-	return true // come up with something more useful, e.g. is database ready or something like that
+	return nil
 }
 
 // ListUsers retrieves a list of users from the UserRepository.
@@ -32,4 +32,15 @@ func (s *UserService) ListUsers() ([]*domain.User, error) {
 	}
 
 	return users, nil
+}
+
+func (s *UserService) Ready() bool {
+	return s.repo != nil
+}
+
+// NewUserService creates a new instance of UserService with the provided UserRepository.
+func NewUserService(repo ports.UserRepository) *UserService {
+	return &UserService{
+		repo: repo,
+	}
 }

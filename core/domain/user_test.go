@@ -10,7 +10,7 @@ import (
 
 func TestUser_String(t *testing.T) {
 	lastSeen := time.Now()
-	settings := make(map[string]any)
+	settings := make(map[string]interface{})
 	settings["classify"] = true
 	id1, id2, id3 := uuid.New(), uuid.New(), uuid.New()
 	tests := []struct {

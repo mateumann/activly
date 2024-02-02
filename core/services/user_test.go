@@ -15,6 +15,10 @@ type mockUserRepository struct {
 	err   error
 }
 
+func (m *mockUserRepository) Create(_ string, _ map[string]interface{}) error {
+	return m.err
+}
+
 func (m *mockUserRepository) Save(_ domain.User) error {
 	return m.err
 }
@@ -104,12 +108,33 @@ func TestUserService_ListUsers(t *testing.T) {
 }
 
 func TestUserService_Ready(t *testing.T) {
-	t.Run("AlwaysTrue", func(t *testing.T) {
+	t.Run("NoRepo", func(t *testing.T) {
 		userService := NewUserService(nil)
+
+		ready := userService.Ready()
+		if ready != false {
+			t.Errorf("UserService.Ready() = %v, want false", ready)
+		}
+	})
+	t.Run("WithRepo", func(t *testing.T) {
+		repo := &mockUserRepository{nil, nil}
+		userService := NewUserService(repo)
 
 		ready := userService.Ready()
 		if ready != true {
 			t.Errorf("UserService.Ready() = %v, want true", ready)
+		}
+	})
+}
+
+func TestUserService_CreateUser(t *testing.T) {
+	t.Run("NameNoSettings", func(t *testing.T) {
+		repo := &mockUserRepository{nil, nil}
+		userService := NewUserService(repo)
+
+		err := userService.CreateUser("foo", nil)
+		if err != nil {
+			t.Errorf("UserService.CreateUser() error = %v, want nil", err)
 		}
 	})
 }

@@ -11,7 +11,7 @@ import (
 type User struct {
 	ID       uuid.UUID
 	Name     string
-	Settings map[string]any // Make sure, that the JSONB submitted to the database is actually a JSON object
+	Settings map[string]interface{} // Make sure, that the JSONB submitted to the database is actually a JSON object
 	LastSeen *time.Time
 }
 
