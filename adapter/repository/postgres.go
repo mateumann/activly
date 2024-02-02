@@ -57,7 +57,7 @@ func (r *UserPostgresRepository) Close() {
 var errPostgresRepositorySaveNotImplemented = errors.New("UserPostgresRepository.Save not yet implemented")
 
 func (r *UserPostgresRepository) Create(name string, settings map[string]interface{}) error {
-	stmt, err := r.db.Prepare("INSERT INTO public.users(name, settings) VALUES (?, ?)")
+	stmt, err := r.db.Prepare("INSERT INTO public.users (name, settings) VALUES ($1, $2);")
 	if err != nil {
 		return fmt.Errorf("failed to prepare an insert user statement: %w", err)
 	}

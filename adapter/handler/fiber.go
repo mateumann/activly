@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
@@ -21,8 +22,9 @@ func (h *FiberHandler) CreateUser(c *fiber.Ctx) error {
 	response := "creating users\n"
 
 	type User struct {
-		Name     string                 `json:"name" xml:"name" form:"name" bson:"name" asn1:"name"`
-		Settings map[string]interface{} `json:"settings" xml:"settings" form:"settings" bson:"settings" asn1:"settings"`
+		Name string `json:"name" xml:"name" form:"name" bson:"name" asn1:"name"`
+
+		Settings []byte `json:"settings" xml:"settings" form:"settings" bson:"settings" asn1:"settings"`
 	}
 
 	u := new(User)
@@ -30,7 +32,13 @@ func (h *FiberHandler) CreateUser(c *fiber.Ctx) error {
 		return fmt.Errorf("cannot parse request body: %w", err)
 	}
 
-	err := h.userService.CreateUser(u.Name, u.Settings)
+	var settings map[string]interface{}
+
+	if err := json.Unmarshal(u.Settings, &settings); err != nil {
+		return fmt.Errorf("cannot unmarshal user settings (%v): %w", u.Settings, err)
+	}
+
+	err := h.userService.CreateUser(u.Name, settings)
 	if err != nil {
 		return fmt.Errorf("cannot create a user: %w", err)
 	}
