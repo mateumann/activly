@@ -14,12 +14,14 @@ import (
 // For more information on the fields and methods of domain.User, refer to its documentation.
 type UserService interface {
 	/*
-		CreateUser(user domain.User) error
 		GetUserByName(name string) (*domain.User, error)
 		GetUserByUUID(uuid uuid.UUID) (*domain.User, error)
 	*/
-	Ready() bool
+	CreateUser(name string, settings map[string]interface{}) error
+
 	ListUsers() ([]*domain.User, error)
+
+	Ready() bool
 }
 
 // UserRepository represents a repository for managing user data.
@@ -29,6 +31,7 @@ type UserService interface {
 //
 // For more information on the fields and methods of domain.User, refer to its documentation.
 type UserRepository interface {
+	Create(name string, settings map[string]interface{}) error
 	Save(user domain.User) error
 	ListUsers() ([]*domain.User, error)
 }
